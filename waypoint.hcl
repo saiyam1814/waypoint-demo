@@ -1,4 +1,4 @@
-project = "example-nodejs"
+project = "saiyam-waypoint"
 
 app "saiyam-waypoint" {
   labels = {
