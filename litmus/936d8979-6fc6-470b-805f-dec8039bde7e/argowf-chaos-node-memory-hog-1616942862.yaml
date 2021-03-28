@@ -1,0 +1,172 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  creationTimestamp: null
+  labels:
+    cluster_id: 43654380-0d38-42ac-ad86-084a2689b418
+    workflow_id: ac55e1e8-268f-44d3-a7ad-c03a9a5ad705
+  name: argowf-chaos-node-memory-hog-1616942862
+  namespace: litmus
+spec:
+  arguments:
+    parameters:
+    - name: adminModeNamespace
+      value: litmus
+  entrypoint: argowf-chaos
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: argo-chaos
+  templates:
+  - arguments: {}
+    inputs: {}
+    metadata: {}
+    name: argowf-chaos
+    outputs: {}
+    steps:
+    - - arguments: {}
+        name: install-experiment
+        template: install-experiment
+    - - arguments: {}
+        name: run-chaos
+        template: run-chaos
+    - - arguments: {}
+        name: revert-chaos
+        template: revert-chaos
+  - arguments: {}
+    container:
+      args:
+      - kubectl apply -f /tmp/node-memory-hog.yaml -n {{workflow.parameters.adminModeNamespace}}
+      command:
+      - sh
+      - -c
+      image: litmuschaos/k8s:latest
+      name: ""
+      resources: {}
+    inputs:
+      artifacts:
+      - name: install-experiment
+        path: /tmp/node-memory-hog.yaml
+        raw:
+          data: |
+            apiVersion: litmuschaos.io/v1alpha1
+            description:
+              message: |
+                Give a memory hog on a node belonging to a deployment
+            kind: ChaosExperiment
+            metadata:
+              name: node-memory-hog
+            spec:
+              definition:
+                scope: Cluster
+                permissions:
+                  - apiGroups:
+                      - ""
+                      - batch
+                      - apps
+                      - litmuschaos.io
+                    resources:
+                      - jobs
+                      - pods
+                      - pods/log
+                      - events
+                      - chaosengines
+                      - chaosexperiments
+                      - chaosresults
+                    verbs:
+                      - create
+                      - list
+                      - get
+                      - patch
+                      - update
+                      - delete
+                  - apiGroups:
+                      - ""
+                    resources:
+                      - nodes
+                    verbs:
+                      - get
+                      - list
+                image: litmuschaos/go-runner:latest
+                imagePullPolicy: Always
+                args:
+                  - -c
+                  - ./experiments -name node-memory-hog
+                command:
+                  - /bin/bash
+                env:
+                  - name: TOTAL_CHAOS_DURATION
+                    value: "120"
+                  - name: MEMORY_PERCENTAGE
+                    value: "90"
+                  - name: RAMP_TIME
+                    value: ""
+                  - name: LIB
+                    value: litmus
+                  - name: LIB_IMAGE
+                    value: litmuschaos/go-runner:latest
+                labels:
+                  name: node-memory-hog
+    metadata: {}
+    name: install-experiment
+    outputs: {}
+  - arguments: {}
+    container:
+      args:
+      - -file=/tmp/chaosengine.yaml
+      - -saveName=/tmp/engine-name
+      image: litmuschaos/litmus-checker:latest
+      name: ""
+      resources: {}
+    inputs:
+      artifacts:
+      - name: run-chaos
+        path: /tmp/chaosengine.yaml
+        raw:
+          data: |
+            apiVersion: litmuschaos.io/v1alpha1
+            kind: ChaosEngine
+            metadata:
+              name: kube-proxy-node-memory-hog-chaos-1616942864
+              namespace: "{{workflow.parameters.adminModeNamespace}}"
+            spec:
+              appinfo:
+                appns: kube-system
+                applabel: k8s-app=kube-proxy
+                appkind: daemonset
+              jobCleanUpPolicy: retain
+              monitoring: false
+              annotationCheck: "false"
+              engineState: active
+              chaosServiceAccount: litmus-admin
+              experiments:
+                - name: node-memory-hog
+                  spec:
+                    components:
+                      env:
+                        - name: MEMORY_PERCENTAGE
+                          value: "50"
+                        - name: TOTAL_CHAOS_DURATION
+                          value: "60"
+    metadata:
+      labels:
+        weight: "10"
+    name: run-chaos
+    outputs: {}
+  - arguments: {}
+    container:
+      args:
+      - kubectl delete chaosengine kube-proxy-node-memory-hog-chaos-1616942864  -n {{workflow.parameters.adminModeNamespace}}
+      command:
+      - sh
+      - -c
+      image: litmuschaos/k8s:latest
+      name: ""
+      resources: {}
+    inputs: {}
+    metadata: {}
+    name: revert-chaos
+    outputs: {}
+status:
+  finishedAt: null
+  startedAt: null
