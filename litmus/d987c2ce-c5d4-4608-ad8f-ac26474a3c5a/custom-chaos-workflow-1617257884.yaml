@@ -165,7 +165,7 @@ spec:
               jobCleanUpPolicy: delete
               annotationCheck: "false"
               engineState: active
-              monitoring: false
+              monitoring: true
               appinfo:
                 appns: default
                 applabel: app=helloservice
