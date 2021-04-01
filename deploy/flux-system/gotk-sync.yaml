@@ -10,7 +10,8 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: https://github.com/ksatchit/chaos-on-cicd
+  url: https://github.com/saiyam1814/waypoint-demo
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
 kind: Kustomization

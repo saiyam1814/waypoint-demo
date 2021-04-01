@@ -4,7 +4,7 @@ metadata:
   name: helloservice
   annotations: 
     litmuschaos.io/gitops: "true"
-    litmuschaos.io/workflow: "e9e13f91-5a01-4668-8356-582a30e0bf5f"
+    litmuschaos.io/workflow: "af0866dd-6a28-428b-9212-8c911d5db370"
 spec:
   selector:
     matchLabels:
