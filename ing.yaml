@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: litmus
+  namespace: litmus
+spec:
+  rules:
+  - host: litmus.bee8254d-da57-4a41-a88f-556bbcceff2e.k8s.civo.com
+    http:
+      paths:
+      - backend:
+          serviceName: litmusportal-frontend-service
+          servicePort: 9091
