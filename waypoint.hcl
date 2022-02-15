@@ -12,6 +12,8 @@ app "saiyam-waypoint" {
         use "docker" {
           image = "saiyam911/cd-demo"
           tag = "1"
+          username = var.user
+          password = var.password
   }
     }
  }
