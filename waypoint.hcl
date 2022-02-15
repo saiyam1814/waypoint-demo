@@ -7,13 +7,12 @@ app "saiyam-waypoint" {
   }
 
   build {
-   use "docker" {}
+    use "pack" {}
     registry {
-        use "docker" {
-          image = "saiyam911/cd-demo"
-          tag = "1"
-          username = var.user
-          password = var.password
+      use "docker" {
+        image = "saiyam911/cd-demo"
+        tag   = "1"
+        local = true
   }
     }
  }
